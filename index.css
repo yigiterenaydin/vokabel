@@ -1,0 +1,342 @@
+/* Modern renk paleti ve dark mode desteği */
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4338ca;
+    --background-color: #f3f4f6;
+    --card-background: #fff;
+    --text-color: #22223b;
+    --light-text: #6b7280;
+    --border-color: #e5e7eb;
+    --correct-color: #22c55e;
+    --close-color: #facc15;
+    --incorrect-color: #ef4444;
+    --shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+    --transition: 0.2s cubic-bezier(.4,0,.2,1);
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #18181b;
+        --card-background: #232336;
+        --text-color: #f3f4f6;
+        --light-text: #a1a1aa;
+        --border-color: #27272a;
+        --shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+    }
+}
+
+html {
+    font-size: 16px;
+    background: var(--background-color);
+}
+body {
+    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 1rem;
+}
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    margin: 0 auto;
+}
+.app-header {
+    margin-bottom: 1.5rem;
+}
+.app-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.02em;
+}
+.app-subtitle {
+    font-size: 1.1rem;
+    color: var(--light-text);
+    max-width: 40ch;
+    margin: 0.5rem auto 0;
+}
+.app-sub-subtitle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-top: 0.5rem;
+}
+.view {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+.view.active {
+    display: flex;
+}
+.drop-zone {
+    width: 100%;
+    height: 180px;
+    border: 2.5px dashed var(--primary-color);
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color var(--transition), border-color var(--transition);
+    position: relative;
+    overflow: hidden;
+    background-color: #ede9fe;
+    margin-bottom: 1rem;
+}
+.drop-zone:hover {
+    background-color: #c7d2fe;
+    border-color: var(--primary-hover);
+}
+.drop-zone p {
+    color: var(--light-text);
+    font-weight: 500;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+.image-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
+    display: none;
+    background-color: var(--card-background);
+    border-radius: 18px;
+    z-index: 2;
+}
+.image-preview[style*="display: block"] {
+    display: block;
+}
+.settings-card, .quiz-card, .results-card {
+    background-color: var(--card-background);
+    border-radius: 18px;
+    padding: 1.5rem;
+    width: 100%;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+.settings-card h4 {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+.quiz-mode-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.radio-group label {
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+.translation-options {
+    display: none;
+    justify-content: space-around;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f8fafc;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+}
+.lang-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+.lang-selector label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--light-text);
+}
+.lang-selector select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    background: var(--background-color);
+    color: var(--text-color);
+}
+.lang-error {
+    color: var(--incorrect-color);
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: center;
+    min-height: 1.2em;
+    display: none;
+}
+.lang-error[style*="display: block"] {
+    display: block;
+}
+.button {
+    background: linear-gradient(90deg, var(--primary-color) 60%, var(--primary-hover) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), box-shadow var(--transition);
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
+.button:disabled {
+    background: #a5b4fc;
+    cursor: not-allowed;
+    color: #e0e7ff;
+}
+.spinner {
+    border: 5px solid #e0e7ff;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto 1rem auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.quiz-header {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+.progress-indicator {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+.question-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+.question-text {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    letter-spacing: 0.01em;
+}
+.answer-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+.answer-input {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color var(--transition);
+    background: var(--background-color);
+    color: var(--text-color);
+}
+.answer-input:focus {
+    border-color: var(--primary-color);
+}
+.answer-input.correct {
+    border-color: var(--correct-color);
+    background: #e7fbe9;
+}
+.answer-input.close {
+    border-color: var(--close-color);
+    background: #fffbe7;
+}
+.answer-input.incorrect {
+    border-color: var(--incorrect-color);
+    background: #fee2e2;
+}
+.feedback-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.7rem;
+}
+.feedback-text {
+    min-height: 1.2em;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+.feedback-text.correct { color: var(--correct-color); }
+.feedback-text.close { color: var(--close-color); }
+.feedback-text.incorrect { color: var(--incorrect-color); }
+.results-card h2 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+.score-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--primary-hover);
+}
+.mistakes-list h3 {
+    margin-bottom: 1rem;
+    text-align: left;
+    color: var(--primary-color);
+}
+.mistake-item {
+    background-color: #fefaf2;
+    padding: 0.8rem;
+    border-radius: 10px;
+    margin-bottom: 0.8rem;
+    text-align: left;
+    border-left: 4px solid var(--close-color);
+}
+.mistake-item p {
+    margin: 0.3rem 0;
+}
+.mistake-item strong {
+    color: var(--text-color);
+    font-weight: 700;
+}
+.mistake-item .user-answer {
+    color: var(--incorrect-color);
+    text-decoration: line-through;
+}
+.mistake-item .correct-answer {
+    color: var(--correct-color);
+    font-weight: 500;
+}
+@media (max-width: 600px) {
+    html { font-size: 15px; }
+    .app-container { max-width: 100vw; padding: 0; }
+    .settings-card, .quiz-card, .results-card { padding: 1rem; border-radius: 12px; }
+    .drop-zone { height: 140px; border-radius: 12px; }
+    .image-preview { border-radius: 12px; }
+    .button { font-size: 1rem; padding: 0.8rem 1rem; border-radius: 8px; }
+}

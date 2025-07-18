@@ -1,0 +1,8 @@
+{
+  "name": "Intelligenter Vokabeltrainer",
+  "description": "Eine App zum Vokabellernen durch Fotografieren von Wortlisten. Die KI extrahiert Wörter und erstellt ein Quiz.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}
