@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface Mistake {
   question: string;
   userAnswer: string;

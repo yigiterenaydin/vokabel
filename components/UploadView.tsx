@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface UploadViewProps {
   onFileSelect: (file: File) => void;
   onStartQuiz: () => void;

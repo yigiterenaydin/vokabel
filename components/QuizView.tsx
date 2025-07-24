@@ -1,4 +1,4 @@
-import React from 'react';
+import { FaGraduationCap } from 'react-icons/fa';
 
 interface QuizViewProps {
   progress: string;
@@ -12,6 +12,8 @@ interface QuizViewProps {
   feedbackClass: string;
   checkAnswerDisabled: boolean;
   onAnswerKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  current: number;
+  total: number;
 }
 
 const QuizView: React.FC<QuizViewProps> = ({
@@ -25,12 +27,20 @@ const QuizView: React.FC<QuizViewProps> = ({
   feedbackText,
   feedbackClass,
   checkAnswerDisabled,
-  onAnswerKeyDown
+  onAnswerKeyDown,
+  current,
+  total
 }) => {
   return (
     <section className="view active quiz-view">
       <div className="quiz-header">
-        <p className="progress-indicator">{progress}</p>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem'}}>
+          <FaGraduationCap style={{color:'#3a256a',fontSize:'1.5rem'}} />
+          <p className="progress-indicator">{progress}</p>
+        </div>
+        <div className="progress-bar-container">
+          <div className="progress-bar" style={{width: `${Math.round((current/total)*100)}%`}}></div>
+        </div>
       </div>
       <div className="card quiz-card">
         <p className="question-label">{questionLabel}</p>
@@ -46,7 +56,7 @@ const QuizView: React.FC<QuizViewProps> = ({
             onKeyDown={onAnswerKeyDown}
             disabled={checkAnswerDisabled}
           />
-          <span className="feedback-icon">{feedbackIcon}</span>
+          <span className={`feedback-icon ${feedbackClass}`}>{feedbackIcon}</span>
         </div>
         <p className={`feedback-text ${feedbackClass}`}>{feedbackText}</p>
       </div>

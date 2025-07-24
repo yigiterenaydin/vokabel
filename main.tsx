@@ -5,6 +5,7 @@ import QuizView from './components/QuizView';
 import ResultsView from './components/ResultsView';
 // @ts-ignore: GoogleGenAI types may not be available
 import { GoogleGenAI } from "@google/genai";
+// import { FaGraduationCap } from 'react-icons/fa'; // kaldırıldı
 
 // --- AI Setup ---
 const API_KEY = 'AIzaSyBU-M-8N5DuIPeIVAv8Qvgtg5QzwdOfl1o';
@@ -24,6 +25,7 @@ interface QuizResult {
   correctAnswer: string;
   status: QuizStatus;
   originalWord: string;
+  correctStreak?: number; // eklendi
 }
 
 // --- AI Functions ---
@@ -122,6 +124,8 @@ const App = () => {
   const [checkAnswerDisabled, setCheckAnswerDisabled] = useState(false);
   const [scoreText, setScoreText] = useState('');
   const [mistakes, setMistakes] = useState<QuizResult[]>([]);
+  // QuizQueue'da her kelime için doğru cevap sayacı tut
+  const [correctStreaks, setCorrectStreaks] = useState<{[word: string]: number}>({});
 
   // Dosya seçme
   const handleFileSelect = (file: File) => {
@@ -150,8 +154,10 @@ const App = () => {
     setView('loading');
     // 1. Kelimeleri çıkar
     const extractedWords = await extractWordsFromImage(base64Image);
+    const limitedWords = extractedWords.slice(0, 10); // Sadece ilk 10 kelimeyle sınırla
+    console.log("Çıkarılan kelimeler (ilk 10):", limitedWords); // <-- Eklendi
     setBase64Image(null);
-    if (extractedWords.length === 0) {
+    if (limitedWords.length === 0) {
       setView('upload');
       return;
     }
@@ -159,23 +165,23 @@ const App = () => {
     let quizPairs: QuizItem[] = [];
     if (quizMode === 'translation') {
       const translations = await Promise.all(
-        extractedWords.map(word => getTranslation(word, fromLang === 'Deutsch' ? toLang : fromLang, fromLang === 'Deutsch' ? fromLang : toLang))
+        limitedWords.map(word => getTranslation(word, fromLang === 'Deutsch' ? toLang : fromLang, fromLang === 'Deutsch' ? fromLang : toLang))
       );
       if (fromLang === 'Deutsch') {
-        quizPairs = extractedWords.map((originalWord, index) => ({
+        quizPairs = limitedWords.map((originalWord, index) => ({
           question: translations[index],
           answer: originalWord,
           originalWord
         })).filter(pair => pair.question);
       } else {
-        quizPairs = extractedWords.map((originalWord, index) => ({
+        quizPairs = limitedWords.map((originalWord, index) => ({
           question: originalWord,
           answer: translations[index],
           originalWord
         })).filter(pair => pair.answer);
       }
     } else {
-      quizPairs = extractedWords.map(word => ({
+      quizPairs = limitedWords.map(word => ({
         question: '',
         answer: word,
         originalWord: word
@@ -230,33 +236,40 @@ const App = () => {
     let status: QuizStatus;
     let distance = levenshtein(answer.trim(), correctAnswer);
     let newQueue = quizQueue.slice(1);
+    let streaks = {...correctStreaks};
     if (distance === 0) {
       status = 'correct';
       setFeedbackIcon('✅');
       setFeedbackText('Richtig!');
       setFeedbackClass('correct');
+      streaks[currentItem.originalWord] = (streaks[currentItem.originalWord] || 0) + 1;
     } else if (distance <= 2 && correctAnswer.length > 3) {
       status = 'close';
       setFeedbackIcon('⚠️');
       setFeedbackText(`Fast richtig! Korrekt ist: ${correctAnswer}`);
       setFeedbackClass('close');
-      newQueue.push(currentItem); // tekrar sor
+      streaks[currentItem.originalWord] = 0;
+      newQueue.unshift(currentItem); // hemen tekrar sor
     } else {
       status = 'incorrect';
       setFeedbackIcon('❌');
       setFeedbackText(`Leider falsch. Korrekt ist: ${correctAnswer}`);
       setFeedbackClass('incorrect');
-      newQueue.push(currentItem); // tekrar sor
+      streaks[currentItem.originalWord] = 0;
+      newQueue.unshift(currentItem); // hemen tekrar sor
     }
-    if (status !== 'correct') {
-      newQueue = shuffleArray(newQueue);
+    // Eğer doğru cevap 2'ye ulaşmadıysa tekrar sor
+    if (streaks[currentItem.originalWord] < 2) {
+      if (status === 'correct') newQueue.push(currentItem);
     }
+    setCorrectStreaks(streaks);
     setQuizResults(prev => ([...prev, {
       question: questionText,
       userAnswer: answer,
       correctAnswer,
       status,
-      originalWord: currentItem.originalWord
+      originalWord: currentItem.originalWord,
+      correctStreak: streaks[currentItem.originalWord]
     }]));
     setQuizQueue(newQueue);
     setTimeout(() => displayNextQuestion(newQueue), status === 'correct' ? 1200 : 2500);
@@ -271,9 +284,11 @@ const App = () => {
     });
     const finalResultsArray = Array.from(finalResults.values());
     const correctCount = finalResultsArray.filter(r => r.status === 'correct').length;
+    const closeCount = finalResultsArray.filter(r => r.status === 'close').length;
+    const incorrectCount = finalResultsArray.filter(r => r.status === 'incorrect').length;
     const totalCount = finalResults.size;
     const percentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
-    setScoreText(`${correctCount} von ${totalCount} Wörtern gemeistert (${percentage}%)`);
+    setScoreText(`${correctCount} von ${totalCount} Wörtern gemeistert (${percentage}%)\n\n✅ Doğru: ${correctCount}\n⚠️ Yakın: ${closeCount}\n❌ Yanlış: ${incorrectCount}`);
     setMistakes(finalResultsArray.filter(r => r.status !== 'correct'));
   };
 
@@ -348,6 +363,8 @@ const App = () => {
           onAnswerKeyDown={e => {
             if (e.key === 'Enter' && !checkAnswerDisabled) handleCheckAnswer();
           }}
+          current={quizResults.length + 1}
+          total={quizQueue.length + quizResults.length}
         />
       )}
       {view === 'results' && (
