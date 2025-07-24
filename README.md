@@ -43,5 +43,5 @@ MIT
 ---
 
 **Kontakt:**
-- Entwickler: [Dein Name] (dein@email.com)
-- Projekt: https://github.com/benutzername/vokabel
+- Entwickler: [Dein Name] (eren.yigit.aydin@gmail.com)
+- Projekt: https://github.com/yigiterenaydin/vokabel
